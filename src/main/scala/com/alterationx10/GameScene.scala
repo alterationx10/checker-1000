@@ -1,14 +1,17 @@
 package com.alterationx10
 
+import com.alterationx10.vm.BoardViewModel
 import indigo.*
 import indigo.scenes.*
+import indigo.shared.scenegraph.Shape.Box
+import indigoextras.ui.HitArea
 
-object GameScene extends Scene[Unit, Unit, Unit]:
+import GameConstants.*
 
-  private val tileSize: Int = 64
+object GameScene extends Scene[Unit, Unit, BoardViewModel]:
 
   type SceneModel     = Unit
-  type SceneViewModel = Unit
+  type SceneViewModel = BoardViewModel
 
   val name: SceneName =
     SceneName("game")
@@ -16,7 +19,7 @@ object GameScene extends Scene[Unit, Unit, Unit]:
   val modelLens: Lens[Unit, Unit] =
     Lens.keepLatest
 
-  val viewModelLens: Lens[Unit, Unit] =
+  val viewModelLens: Lens[BoardViewModel, BoardViewModel] =
     Lens.keepLatest
 
   val eventFilters: EventFilters =
@@ -34,43 +37,17 @@ object GameScene extends Scene[Unit, Unit, Unit]:
   def updateViewModel(
       context: SceneContext[Unit],
       model: Unit,
-      viewModel: Unit
-  ): GlobalEvent => Outcome[Unit] =
+      viewModel: BoardViewModel
+  ): GlobalEvent => Outcome[BoardViewModel] =
     _ => Outcome(viewModel)
-
-  private def genTiles = for {
-    x <- 0 to 7
-    y <- 0 to 7
-  } yield {
-    val isShifted = y % 2 == 0
-    val isBlack   = x % 2 != 0
-    val offset    = if isShifted then 0 else tileSize
-    if (isBlack) {
-      Shape
-        .Box(
-          Rectangle(0, 0, tileSize, tileSize),
-          Fill.Color(RGBA.fromHexString(C64.Black.hex))
-        )
-        .moveTo(x * tileSize - offset, y * tileSize)
-    } else {
-      Shape
-        .Box(
-          Rectangle(0, 0, tileSize, tileSize),
-          Fill.Color(RGBA.fromHexString(C64.Red.hex))
-        )
-        .moveTo(x * tileSize + offset, y * tileSize)
-    }
-  }
 
   def present(
       context: SceneContext[Unit],
       model: Unit,
-      viewModel: Unit
+      viewModel: BoardViewModel
   ): Outcome[SceneUpdateFragment] =
     Outcome(
       SceneUpdateFragment(
-        Batch.fromIndexedSeq(
-          genTiles
-        )
+        viewModel.tiles.map(_.background)
       )
     )
