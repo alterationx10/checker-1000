@@ -12,15 +12,18 @@ import indigoextras.ui.HitArea
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
+import events.*
 import GameConstants.*
 
 @JSExportTopLevel("IndigoGame")
-object Checker1000 extends IndigoGame[Unit, Unit, Unit, BoardViewModel]:
+object Checker1000 extends IndigoGame[Unit, StartupData, Unit, BoardViewModel]:
 
   def initialScene(bootData: Unit): Option[SceneName] =
     None
 
-  def scenes(bootData: Unit): NonEmptyList[Scene[Unit, Unit, BoardViewModel]] =
+  def scenes(
+      bootData: Unit
+  ): NonEmptyList[Scene[StartupData, Unit, BoardViewModel]] =
     NonEmptyList(GameScene)
 
   val eventFilters: EventFilters =
@@ -31,54 +34,28 @@ object Checker1000 extends IndigoGame[Unit, Unit, Unit, BoardViewModel]:
       BootResult
         .noData(
           GameConfig.default
-            .withViewport(1280, 720)
+            .withViewport(GameConstants.gameWidth, GameConstants.gameHeight)
         )
     )
 
-  def initialModel(startupData: Unit): Outcome[Unit] =
+  def initialModel(startupData: StartupData): Outcome[Unit] =
     Outcome(())
 
-  final case class Log(message: String) extends GlobalEvent
   def initialViewModel(
-      startupData: Unit,
+      startupData: StartupData,
       model: Unit
-  ): Outcome[BoardViewModel] = {
-
-    // TODO this should be in startupData
-    def genTiles: Batch[Tile] = tilePoints.map { p =>
-      val yEven = (p.y / tileSize) % 2 == 0
-      val xEven = (p.x / tileSize) % 2 == 0
-      val isRed = (yEven && xEven) || (!yEven && !xEven)
-      val color: RGBA = RGBA.fromHexString {
-        if isRed then C64.Red.hex else C64.Black.hex
-      }
-      Tile(
-        checker = None,
-        background = Shape.Box(
-          Rectangle(p.x, p.y, tileSize, tileSize),
-          Fill.Color(color)
-        ),
-        hitbox = HitArea(
-          Polygon.fromRectangle(Rectangle(p.x, p.y, tileSize, tileSize))
-        ).withClickActions(
-          Log(s"(${p.x / tileSize},${p.y / tileSize}) was clicked!")
-        )
-      )
-
-    }
-
-    Outcome(BoardViewModel(tiles = genTiles))
-  }
+  ): Outcome[BoardViewModel] =
+    Outcome(BoardViewModel(tiles = startupData.genTiles))
 
   def setup(
       bootData: Unit,
       assetCollection: AssetCollection,
       dice: Dice
-  ): Outcome[Startup[Unit]] =
-    Outcome(Startup.Success(()))
+  ): Outcome[Startup[StartupData]] =
+    Outcome(Startup.Success(StartupData()))
 
   def updateModel(
-      context: FrameContext[Unit],
+      context: FrameContext[StartupData],
       model: Unit
   ): GlobalEvent => Outcome[Unit] = {
     case e @ MouseEvent.Click(p) =>
@@ -87,7 +64,7 @@ object Checker1000 extends IndigoGame[Unit, Unit, Unit, BoardViewModel]:
     case _ => Outcome(model)
   }
   def updateViewModel(
-      context: FrameContext[Unit],
+      context: FrameContext[StartupData],
       model: Unit,
       viewModel: BoardViewModel
   ): GlobalEvent => Outcome[BoardViewModel] = {
@@ -97,7 +74,7 @@ object Checker1000 extends IndigoGame[Unit, Unit, Unit, BoardViewModel]:
     case _ => viewModel.update(context.mouse)
   }
   def present(
-      context: FrameContext[Unit],
+      context: FrameContext[StartupData],
       model: Unit,
       viewModel: BoardViewModel
   ): Outcome[SceneUpdateFragment] =

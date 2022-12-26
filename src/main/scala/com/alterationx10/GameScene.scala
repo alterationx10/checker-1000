@@ -8,7 +8,7 @@ import indigoextras.ui.HitArea
 
 import GameConstants.*
 
-object GameScene extends Scene[Unit, Unit, BoardViewModel]:
+object GameScene extends Scene[StartupData, Unit, BoardViewModel]:
 
   type SceneModel     = Unit
   type SceneViewModel = BoardViewModel
@@ -29,20 +29,20 @@ object GameScene extends Scene[Unit, Unit, BoardViewModel]:
     Set()
 
   def updateModel(
-      context: SceneContext[Unit],
+      context: SceneContext[StartupData],
       model: Unit
   ): GlobalEvent => Outcome[Unit] =
     _ => Outcome(model)
 
   def updateViewModel(
-      context: SceneContext[Unit],
+      context: SceneContext[StartupData],
       model: Unit,
       viewModel: BoardViewModel
   ): GlobalEvent => Outcome[BoardViewModel] =
     _ => Outcome(viewModel)
 
   def present(
-      context: SceneContext[Unit],
+      context: SceneContext[StartupData],
       model: Unit,
       viewModel: BoardViewModel
   ): Outcome[SceneUpdateFragment] =
