@@ -70,8 +70,11 @@ object Checker1000 extends IndigoGame[Unit, StartupData, Unit, BoardViewModel]:
   ): GlobalEvent => Outcome[BoardViewModel] = {
     case l: Log =>
       consoleLog(l.message)
+      Outcome(viewModel)
+    case m @ MouseEvent.Click(p) =>
       viewModel.update(context.mouse)
-    case _ => viewModel.update(context.mouse)
+    case _ =>
+      Outcome(viewModel)
   }
   def present(
       context: FrameContext[StartupData],
