@@ -48,6 +48,10 @@ object GameScene extends Scene[StartupData, Unit, BoardViewModel]:
   ): Outcome[SceneUpdateFragment] =
     Outcome(
       SceneUpdateFragment(
-        viewModel.tiles.map(_.background)
+        viewModel.tiles.map(_.background) ++ Batch
+          .sequenceOption(
+            viewModel.tiles.map(_.checker.map(_.background))
+          )
+          .getOrElse(Batch.empty)
       )
     )
